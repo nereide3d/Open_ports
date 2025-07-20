@@ -5,6 +5,11 @@
 # Asegúrate de tener instalado netcat (nc) para ejecutar este script.
 # Asegúrate de tener permisos de ejecución: chmod +x Open_ports.sh
 
+if [ $# -ne 3 ]; then
+  echo "Uso: $0 <host> <port_start> <port_finish>"
+  exit 1
+fi
+
 host=$1
 port_start=$2
 port_finish=$3
@@ -28,8 +33,13 @@ for ((port=port_start; port<=port_finish; port++)); do
   bar=$(printf '%0.s#' $(seq 1 $filled))
   printf "\rProgreso: [%-50s] %d%%" "$bar" "$percent"
 done
-
-echo -e "\n\nPuertos abiertos encontrados:"
-for port in "${open_ports[@]}"; do
-  echo "Puerto $port abierto"
-done
+  # Finalizar barra de progreso
+  # Si hay puertos habiertos te los imprimira en pantalla, si no te dira que no hay puertos abiertos
+if [ ${#open_ports[@]} -gt 0 ]; then
+  echo -e "\n\nPuertos abiertos encontrados:"
+  for port in "${open_ports[@]}"; do
+    echo "Puerto $port abierto"
+  done
+else
+  echo -e "\n\nNo se encontraron puertos abiertos."
+fi
