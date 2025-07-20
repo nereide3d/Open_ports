@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Uso: ./Open_ports.sh <host> <port_start> <port_finish>
+# Ejemplo: ./Open_ports.sh 127.0.0.1 1 65535
+# Asegúrate de tener instalado netcat (nc) para ejecutar este script.
+# Asegúrate de tener permisos de ejecución: chmod +x Open_ports.sh
+
 host=$1
 port_start=$2
 port_finish=$3
@@ -7,18 +12,24 @@ port_finish=$3
 total_ports=$((port_finish - port_start + 1))
 current=0
 
-for ((port=port_start; port<=port_finish; port++)); do
-  # Verificar si el puerto está abierto
-  nc -z -w1 "$host" "$port" 2>/dev/null && echo "Puerto $port abierto"
+# Lista para puertos abiertos
+open_ports=()
 
-  # Actualizar progreso
+for ((port=port_start; port<=port_finish; port++)); do
+  # Escaneo del puerto
+  if nc -z -w1 "$host" "$port" 2>/dev/null; then
+    open_ports+=("$port")
+  fi
+
+  # Actualizar barra de progreso
   current=$((current + 1))
   percent=$((current * 100 / total_ports))
-  printf "\rProgress: [%-50s] %d%%" $(printf '#%.0s' $(seq 1 $((percent / 2)))) $percent
+  filled=$((percent / 2))
+  bar=$(printf '%0.s#' $(seq 1 $filled))
+  printf "\rProgreso: [%-50s] %d%%" "$bar" "$percent"
 done
 
-echo -e "\nScan Complete."
-# Uso: ./Open_ports.sh <host> <port_start> <port_finish>
-# Ejemplo: ./Open_ports.sh 127.0.0.1 1 65535
-# Asegúrate de tener instalado netcat (nc) para ejecutar este script.
-# Asegúrate de tener permisos de ejecución: sudo chmod +x Open_ports.sh
+echo -e "\n\nPuertos abiertos encontrados:"
+for port in "${open_ports[@]}"; do
+  echo "Puerto $port abierto"
+done
